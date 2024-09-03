@@ -1,6 +1,10 @@
 import streamlit as st
 
-st.title("🎈 My new app")
-st.write(
-    "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
-)
+def run():
+    """app that displays some metrics about electricty generation in the uk"""
+
+
+    st.title("electricity genration uk")
+
+if __name__ == '__main__':
+    run()
