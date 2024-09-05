@@ -24,4 +24,5 @@ def get_forward_intensity(postcode: str, date_from: datetime.datetime):
         data['forecast'].append(record['intensity']['forecast'])
 
     df = pandas.DataFrame(data)
+    df['from'] = pandas.to_datetime(df['from'])
     return df
