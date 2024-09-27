@@ -25,7 +25,7 @@ def run():
 
     if st.session_state.postcode == '':
         current_intensity = carbon_intensity_data.get_current_intensity()
-        st.metric('uk current carbon intensity', current_intensity)
+        st.metric(label='uk current carbon intensity', value=current_intensity)
 
     else:
         current_intensity = carbon_intensity_data.get_current_postcode_intensity(st.session_state.postcode)
@@ -33,7 +33,9 @@ def run():
 
         col1, col2 = st.columns(2)
         col1.metric(f'{st.session_state.postcode} current carbon intensity', current_intensity)
-        col2.metric(f'best time to charge car is: ', find_minimum_carbon_window(forecast_intensity).strftime('%a %d-%b @ %H:%M'))
+
+        col2.caption(f'best time to charge car is:')
+        col2.markdown(f'## {find_minimum_carbon_window(forecast_intensity).strftime("%a %d-%b @ %H:%M")}')
         st.line_chart(forecast_intensity, x='from', y='forecast', color='#60f0f8')
 
 
