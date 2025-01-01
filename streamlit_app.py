@@ -1,4 +1,5 @@
 import datetime
+import pandas
 
 import streamlit as st
 
@@ -8,9 +9,10 @@ def find_minimum_carbon_window(df):
     """returns the start of period with the lowest mean carbon intensity"""
 
     WINDOW_SIZE = 4
-    window_average = df['forecast'].rolling(WINDOW_SIZE).mean()
-
-    return df.loc[window_average.idxmin() - WINDOW_SIZE, 'from']
+    indexer = pandas.api.indexers.FixedForwardWindowIndexer(window_size=WINDOW_SIZE)
+    window_average = df['forecast'].rolling(indexer).mean()
+    df['window'] = window_average
+    return df.loc[window_average.idxmin(), 'from']
 
 
 def run():
