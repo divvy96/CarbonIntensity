@@ -33,12 +33,17 @@ def run():
         current_intensity = carbon_intensity_data.get_current_postcode_intensity(st.session_state.postcode)
         forecast_intensity = carbon_intensity_data.get_forward_intensity(st.session_state.postcode, datetime.datetime.now())
 
-        col1, col2 = st.columns(2)
-        col1.metric(f'{st.session_state.postcode} current carbon intensity', current_intensity)
+        if  current_intensity != '':
+            col1, col2 = st.columns(2)
+            col1.metric(f'{st.session_state.postcode} current carbon intensity', current_intensity)
 
-        col2.caption(f'best time to charge car is:')
-        col2.markdown(f'## {find_minimum_carbon_window(forecast_intensity).strftime("%a %d-%b @ %H:%M")}')
-        st.line_chart(forecast_intensity, x='from', y='forecast', color='#60f0f8')
+            col2.caption(f'best time to charge car is:')
+            col2.markdown(f'## {find_minimum_carbon_window(forecast_intensity).strftime("%a %d-%b @ %H:%M")}')
+
+        if isinstance(forecast_intensity, pandas.DataFrame):
+            st.line_chart(forecast_intensity, x='from', y='forecast')
+        else:
+            st.write(f'unable to find postcode {st.session_state.postcode}')
 
 
 if __name__ == '__main__':

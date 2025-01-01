@@ -9,20 +9,29 @@ def get_current_intensity():
 
 def get_current_postcode_intensity(postcode: str):
     response = requests.get(f'https://api.carbonintensity.org.uk/regional/postcode/{postcode}')
-    return response.json()['data'][0]['data'][0]['intensity']['forecast']
+    if response.status_code == 200:
+        return response.json()['data'][0]['data'][0]['intensity']['forecast']
+    else:
+        return ''
 
 def get_forward_intensity(postcode: str, date_from: datetime.datetime):
 
     response = requests.get(f"https://api.carbonintensity.org.uk/regional/intensity/{date_from.isoformat()}/fw48h/postcode/{postcode}")
-    json = response.json()
+    print(response.status_code)
 
-    data = {'from': [],
-            'forecast': []}
+    print(response.text)
+    if response.status_code == 200 and response.text != 'null':
+        json = response.json()
 
-    for record in json['data']['data']:
-        data['from'].append(record['from'])
-        data['forecast'].append(record['intensity']['forecast'])
+        data = {'from': [],
+                'forecast': []}
 
-    df = pandas.DataFrame(data)
-    df['from'] = pandas.to_datetime(df['from'])
-    return df
+        for record in json['data']['data']:
+            data['from'].append(record['from'])
+            data['forecast'].append(record['intensity']['forecast'])
+
+        df = pandas.DataFrame(data)
+        df['from'] = pandas.to_datetime(df['from'])
+        return df
+    else:
+        return ''
