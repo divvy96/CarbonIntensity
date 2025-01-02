@@ -25,7 +25,12 @@ def run():
 
     st.text_input('Enter postcode for current carbon intensity of your region', key='postcode')
 
-    if st.session_state.postcode == '':
+    df_intensity_banding = pandas.DataFrame(carbon_intensity_data.intensity_bands(), columns=['minimum carbon level', 'intensity label'])
+    st.dataframe(
+        data=df_intensity_banding,
+        hide_index=True,
+    )
+
         current_intensity = carbon_intensity_data.get_current_intensity()
         st.metric(label='uk current carbon intensity', value=current_intensity)
 
