@@ -41,11 +41,12 @@ def run():
         st.metric(label="uk current carbon intensity", value=current_intensity)
 
     else:
+        postcode = st.session_state.postcode.strip()
         current_intensity = carbon_intensity_data.get_current_postcode_intensity(
-            st.session_state.postcode
+            postcode
         )
         forecast_intensity = carbon_intensity_data.get_forward_intensity(
-            st.session_state.postcode, datetime.datetime.now()
+            postcode, datetime.datetime.now()
         )
 
         if current_intensity != "":
