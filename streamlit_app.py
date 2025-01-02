@@ -19,9 +19,9 @@ def find_minimum_carbon_window(df):
 def run():
     """app that displays some metrics about electricty generation in the uk"""
 
-    st.set_page_config(page_title="electricity genration uk")
+    st.set_page_config(page_title="electricity generation uk")
 
-    st.title("electricity genration uk")
+    st.title("electricity generation uk")
 
     st.text_input(
         "Enter postcode for current carbon intensity of your region", key="postcode"
