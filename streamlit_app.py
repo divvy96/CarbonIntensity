@@ -54,8 +54,10 @@ def run():
             col1, col2 = st.columns(2)
             with col1:
                 st.metric(
-                    f"current carbon intensity {st.session_state.postcode}",
-                    f"{current_intensity} gCO₂/kWh",
+                    label=f"current carbon intensity {st.session_state.postcode}",
+                    value=f"{current_intensity} gCO₂/kWh",
+                    delta=f"{(int(current_intensity - forecast_intensity['forecast'].mean()))} vs avg",
+                    delta_color='inverse'
                 )
 
             with col2:
