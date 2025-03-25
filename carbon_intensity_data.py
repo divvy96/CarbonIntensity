@@ -70,6 +70,17 @@ def get_forward_intensity(postcode: str, date_from: datetime.datetime):
 
 def intensity_bands():
     # year = 2025
+    # bandings are upadated periodically
+
     band_names = ["Very Low", "Low", "Moderate", "High", "Very High"]
-    carbon_limits = [0, 30, 100, 180, 250]
-    return zip(carbon_limits, band_names)
+    lower_bound = [0, 30, 100, 180, 250]
+    upper_bound = [30, 100, 180, 250, 350]
+    color = ['lightgreen', 'green', 'yellow', 'coral', 'red']
+
+    intensity_bands_df = pandas.DataFrame(
+            {'intensity': band_names,
+             'lower_bound': lower_bound,
+             'upper_bound': upper_bound,
+             'color': color}
+        )
+    return intensity_bands_df
