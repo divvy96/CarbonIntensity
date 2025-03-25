@@ -21,7 +21,8 @@ def run():
 
     st.set_page_config(page_title="electricity generation uk")
 
-    st.title("electricity generation uk")
+    st.title("UK Carbon Intensity Forecast")
+    st.subheader("Find the best times to use electricty to minimise gCO₂/kWh")
 
     st.text_input(
         "Enter postcode for current carbon intensity of your region", key="postcode"
@@ -51,15 +52,18 @@ def run():
 
         if current_intensity != "":
             col1, col2 = st.columns(2)
-            col1.metric(
-                f"{st.session_state.postcode} current carbon intensity",
-                current_intensity,
-            )
+            with col1:
+                st.metric(
+                    f"current carbon intensity {st.session_state.postcode}",
+                    f"{current_intensity} gCO₂/kWh",
+                )
 
-            col2.caption(f"best time to charge car is:")
-            col2.markdown(
-                f'## {find_minimum_carbon_window(forecast_intensity).strftime("%a %d-%b @ %H:%M")}'
-            )
+            with col2:
+
+                st.caption(f"best time to charge car is:")
+                st.markdown(
+                    f'## {find_minimum_carbon_window(forecast_intensity).strftime("%a %d-%b @ %H:%M")}'
+                )
 
         if isinstance(forecast_intensity, pandas.DataFrame):
             st.line_chart(forecast_intensity, x="from", y="forecast")
