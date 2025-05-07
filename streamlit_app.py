@@ -47,20 +47,16 @@ def run():
     )
 
     intensity_banding_df = carbon_intensity_data.intensity_bands()
-    st.dataframe(
-        data=intensity_banding_df[['intensity', 'upper_bound']],
-        hide_index=True,
-    )
 
     if st.session_state.postcode == "":
         current_intensity = carbon_intensity_data.get_current_intensity()
-        st.metric(label="uk current carbon intensity", value=current_intensity)
+        st.metric(label="uk current carbon intensity", value=current_intensity.carbon_intensity)
 
     else:
         postcode = st.session_state.postcode.strip()
         current_intensity = carbon_intensity_data.get_current_postcode_intensity(
             postcode
-        )
+        ).carbon_intensity
         forecast_intensity = carbon_intensity_data.get_forward_intensity(
             postcode, datetime.datetime.now()
         )
@@ -112,6 +108,10 @@ def run():
         else:
             st.write(f"unable to find postcode {st.session_state.postcode}")
 
+    st.dataframe(
+        data=intensity_banding_df[['intensity', 'upper_bound']],
+        hide_index=True,
+    )
 
 if __name__ == "__main__":
     run()
