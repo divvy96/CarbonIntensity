@@ -7,10 +7,16 @@ import pandas
 
 intensity = namedtuple("intensity", field_names=["carbon_intensity"], defaults=[None])
 
+generation_mix = namedtuple(
+    "generation_mix",
+    field_names=["fuel", "percentage", "start_time", "end_time", "region_id"],
+)
+)
 
-def get_historical_region_intensity(start_datetime: datetime.datetime, regionId: str):
+
+def get_historical_region_intensity(start_datetime: datetime.datetime, region_id: str):
     period_start = start_datetime.isoformat()
-    url = f"https://api.carbonintensity.org.uk/regional/intensity/{period_start}/fw48h/regionid/{regionId}"
+    url = f"https://api.carbonintensity.org.uk/regional/intensity/{period_start}/fw48h/regionid/{region_id}"
     response = requests.get(url)
     if response.status_code != 200:
         print("Error retrieving data")
@@ -34,6 +40,8 @@ def get_historical_region_intensity(start_datetime: datetime.datetime, regionId:
 
 
 def get_historical_postcode_mix(start_datetime: datetime.datetime, postcode: str):
+    """get the percentage of each fuel used for a 48hour window for a particular postcode"""
+
     period_start = start_datetime.isoformat()
     url = f"https://api.carbonintensity.org.uk/regional/intensity/{period_start}/fw48h/postcode/{postcode}"
     response = requests.get(url)
@@ -43,24 +51,19 @@ def get_historical_postcode_mix(start_datetime: datetime.datetime, postcode: str
 
     data = response.json()
     generation_mix_history = []
+
     for start_time in data["data"]["data"]:
         for generation_values in start_time["generationmix"]:
-            generation_mix_history.append(
-                (
-                    generation_values["fuel"],
-                    generation_values["perc"],
-                    start_time["from"],
-                    start_time["to"],
-                    postcode,
-                )
+            generation_mix_row = generation_mix(
+                fuel=generation_values["fuel"],
+                percentage=generation_values["perc"],
+                start_time=start_time["from"],
+                end_time=start_time["to"],
+                region_id=data["data"]["regionid"]
             )
+            generation_mix_history.append(generation_mix_row)
 
-    df = pandas.DataFrame(
-        generation_mix_history, columns=["fuel", "percentage", "from", "to", "postcode"]
-    )
-    df["from"] = pandas.to_datetime(df["from"])
-    df["to"] = pandas.to_datetime(df["to"])
-    return df
+    return generation_mix_history
 
 
 def get_current_intensity():
