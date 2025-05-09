@@ -10,7 +10,7 @@ def test_first_rolling_window():
     from_dates = pandas.date_range("2025-01-01 12:00:00", periods=5, freq="30min")
 
     df = pandas.DataFrame(
-        {"forecast": intensity, "from": pandas.to_datetime(from_dates)}
+        {"intensity": intensity, "start_time": pandas.to_datetime(from_dates)}
     )
 
     min_start_time = streamlit_app.find_minimum_carbon_window(df)
@@ -25,7 +25,7 @@ def test_last_rolling_window():
     from_dates = pandas.date_range("2025-01-01 12:00:00", periods=5, freq="30min")
 
     df = pandas.DataFrame(
-        {"forecast": intensity, "from": pandas.to_datetime(from_dates)}
+        {"intensity": intensity, "start_time": pandas.to_datetime(from_dates)}
     )
 
     min_start_time = streamlit_app.find_minimum_carbon_window(df)

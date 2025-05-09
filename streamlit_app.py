@@ -13,9 +13,9 @@ def find_minimum_carbon_window(df):
 
     WINDOW_SIZE = 4
     indexer = pandas.api.indexers.FixedForwardWindowIndexer(window_size=WINDOW_SIZE)
-    window_average = df["forecast"].rolling(indexer).mean()
+    window_average = df["intensity"].rolling(indexer).mean()
     df["window"] = window_average
-    return df.loc[window_average.idxmin(), "from"]
+    return df.loc[window_average.idxmin(), "start_time"]
 
 
 def area_chart(banding_df) -> alt.Chart:
@@ -24,7 +24,7 @@ def area_chart(banding_df) -> alt.Chart:
     chart = (alt.Chart(banding_df).
              mark_area(opacity=0.25).
              encode(
-                 x='from:T',
+                 x='start_time:T',
                  y='lower_bound:Q',
                  y2='upper_bound:Q',
                  color=alt.Color('color:N', scale=None)
@@ -57,9 +57,11 @@ def run():
         current_intensity = carbon_intensity_data.get_current_postcode_intensity(
             postcode
         ).carbon_intensity
-        forecast_intensity = carbon_intensity_data.get_forward_intensity(
-            postcode, datetime.datetime.now()
-        )
+        forecast_intensity = pandas.DataFrame(carbon_intensity_data.get_48hr_postcode_intensity(
+            start_datetime=datetime.datetime.now(), postcode=postcode
+        ))
+        forecast_intensity['start_time'] = pandas.to_datetime(forecast_intensity['start_time'])
+        forecast_intensity['end_time'] = pandas.to_datetime(forecast_intensity['end_time'])
 
         if current_intensity != "":
             col1, col2 = st.columns(2)
@@ -67,7 +69,7 @@ def run():
                 st.metric(
                     label=f"current carbon intensity {st.session_state.postcode}",
                     value=f"{current_intensity} gCO₂/kWh",
-                    delta=f"{(int(current_intensity - forecast_intensity['forecast'].mean()))} vs avg",
+                    delta=f"{(int(current_intensity - forecast_intensity['intensity'].mean()))} vs avg",
                     delta_color='inverse'
                 )
 
@@ -84,11 +86,11 @@ def run():
             banding_charts = []
             for row in intensity_banding_df.itertuples(index=False):
                 banding_area_chart = area_chart(pandas.DataFrame(
-                    [{'from': forecast_intensity['from'].min(),
+                    [{'start_time': forecast_intensity['start_time'].min(),
                       'lower_bound': row.lower_bound,
                       'upper_bound': row.upper_bound,
                       'color': row.color},
-                     {'from': forecast_intensity['from'].max(),
+                     {'start_time': forecast_intensity['start_time'].max(),
                       'lower_bound': row.lower_bound,
                        'upper_bound': row.upper_bound,
                        'color': row.color}]
@@ -100,7 +102,7 @@ def run():
             forecast_chart = (
                 alt.Chart(forecast_intensity)
                 .mark_line()
-                .encode(x='from:T', y='forecast:Q')
+                .encode(x='start_time:T', y='intensity:Q')
             )
 
             final_chart = forecast_chart + banding_charts

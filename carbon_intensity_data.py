@@ -18,7 +18,7 @@ regional_temporal_intensity = namedtuple(
 )
 
 
-def get_historical_region_intensity(start_datetime: datetime.datetime, region_id: str):
+def get_48hr_region_intensity(start_datetime: datetime.datetime, region_id: str):
     """returns the regional g/CO2 equivalent emissions for a specified region"""
 
     period_start = start_datetime.isoformat()
@@ -29,6 +29,31 @@ def get_historical_region_intensity(start_datetime: datetime.datetime, region_id
         return
 
     data = response.json()
+    regional_intensity = []
+    for start_time in data["data"]["data"]:
+        regional_intensity_row = regional_temporal_intensity(
+            region_id=data["data"]["regionid"],
+            intensity=start_time["intensity"]["forecast"],
+            start_time=start_time["from"],
+            end_time=start_time["to"],
+        )
+        regional_intensity.append(regional_intensity_row)
+
+    return regional_intensity
+
+
+def get_48hr_postcode_intensity(start_datetime: datetime.datetime, postcode: str):
+    """returns the regional g/CO2 equivalent emissions for specified region, using postcode to determine the region"""
+ 
+    period_start = start_datetime.isoformat()
+
+    url = f"https://api.carbonintensity.org.uk/regional/intensity/{period_start}/fw48h/postcode/{postcode}"
+    response = requests.get(url)
+    if response.status_code != 200:
+        print("Error retrieving data")
+
+    data = response.json()
+
     regional_intensity = []
     for start_time in data["data"]["data"]:
         regional_intensity_row = regional_temporal_intensity(
@@ -89,27 +114,6 @@ def get_current_postcode_intensity(postcode: str):
         return intensity(response.json()["data"][0]["data"][0]["intensity"]["forecast"])
     else:
         return intensity()
-
-
-def get_forward_intensity(postcode: str, date_from: datetime.datetime):
-    response = requests.get(
-        f"https://api.carbonintensity.org.uk/regional/intensity/{date_from.isoformat()}/fw48h/postcode/{postcode}"
-    )
-
-    if response.status_code == 200 and response.text != "null":
-        json = response.json()
-
-        data = {"from": [], "forecast": []}
-
-        for record in json["data"]["data"]:
-            data["from"].append(record["from"])
-            data["forecast"].append(record["intensity"]["forecast"])
-
-        df = pandas.DataFrame(data)
-        df["from"] = pandas.to_datetime(df["from"])
-        return df
-    else:
-        return ""
 
 
 def intensity_bands():
