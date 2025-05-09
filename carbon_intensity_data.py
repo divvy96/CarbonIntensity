@@ -3,8 +3,6 @@ from collections import namedtuple
 import datetime
 import requests
 
-import pandas
-
 intensity = namedtuple("intensity", field_names=["carbon_intensity"], defaults=[None])
 
 generation_mix = namedtuple(
@@ -125,12 +123,10 @@ def intensity_bands():
     upper_bound = [30, 100, 180, 250, 350]
     color = ["lightgreen", "green", "yellow", "coral", "red"]
 
-    intensity_bands_df = pandas.DataFrame(
-        {
+    intensity_bands = {
             "intensity": band_names,
             "lower_bound": lower_bound,
             "upper_bound": upper_bound,
             "color": color,
         }
-    )
-    return intensity_bands_df
+    return intensity_bands

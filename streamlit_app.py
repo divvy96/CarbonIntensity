@@ -46,7 +46,7 @@ def run():
         "Enter postcode for current carbon intensity of your region", key="postcode"
     )
 
-    intensity_banding_df = carbon_intensity_data.intensity_bands()
+    intensity_banding_df = pandas.DataFrame(carbon_intensity_data.intensity_bands())
 
     if st.session_state.postcode == "":
         current_intensity = carbon_intensity_data.get_current_intensity()
