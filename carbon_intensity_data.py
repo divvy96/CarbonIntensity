@@ -1,6 +1,7 @@
 from collections import namedtuple
 import datetime
 
+import aiohttp
 import requests
 
 intensity = namedtuple("intensity", field_names=["carbon_intensity"], defaults=[None])
@@ -16,17 +17,18 @@ regional_temporal_intensity = namedtuple(
 )
 
 
-def get_48hr_region_intensity(start_datetime: datetime.datetime, region_id: str):
+async def get_48hr_region_intensity(start_datetime: datetime.datetime, region_id: str, client: aiohttp.ClientSession):
     """returns the regional g/CO2 equivalent emissions for a specified region"""
 
     period_start = start_datetime.isoformat()
+
     url = f"https://api.carbonintensity.org.uk/regional/intensity/{period_start}/fw48h/regionid/{region_id}"
-    response = requests.get(url)
-    if response.status_code != 200:
+    response = await client.get(url)
+    if response.status != 200:
         print("Error retrieving data")
         return
 
-    data = response.json()
+    data = await response.json()
     regional_intensity = []
     for start_time in data["data"]["data"]:
         regional_intensity_row = regional_temporal_intensity(
@@ -39,6 +41,32 @@ def get_48hr_region_intensity(start_datetime: datetime.datetime, region_id: str)
 
     return regional_intensity
 
+
+async def get_48hr_generation_mix(start_datetime: datetime.datetime, region_id: str, client: aiohttp.ClientSession):
+    """returns the regional generation mix for a specified region"""
+
+    period_start = start_datetime.isoformat()
+
+    url = f"https://api.carbonintensity.org.uk/regional/intensity/{period_start}/fw48h/regionid/{region_id}"
+    response = await client.get(url)
+    if response.status != 200:
+        print("Error retrieving data")
+        return
+
+    data = await response.json()
+    generation_mix_history = []
+    for start_time in data["data"]["data"]:
+        for fuel in start_time['generationmix']:
+            regional_generation_mix_row = generation_mix(
+            region_id=data["data"]["regionid"],
+            fuel=fuel["fuel"],
+            percentage=fuel["perc"],
+            start_time=start_time["from"],
+            end_time=start_time["to"],
+        )
+            generation_mix_history.append(regional_generation_mix_row)
+
+    return generation_mix_history
 
 def get_48hr_postcode_intensity(start_datetime: datetime.datetime, postcode: str):
     """returns the regional g/CO2 equivalent emissions for specified region, using postcode to determine the region"""
