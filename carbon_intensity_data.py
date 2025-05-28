@@ -1,13 +1,13 @@
 from collections import namedtuple
-
 import datetime
+
 import requests
 
 intensity = namedtuple("intensity", field_names=["carbon_intensity"], defaults=[None])
 
 generation_mix = namedtuple(
     "generation_mix",
-    field_names=["fuel", "percentage", "start_time", "end_time", "region_id"],
+    field_names=["region_id", "fuel", "percentage", "start_time", "end_time"]
 )
 
 regional_temporal_intensity = namedtuple(
