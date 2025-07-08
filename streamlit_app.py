@@ -50,7 +50,10 @@ def run():
 
     if st.session_state.postcode == "":
         current_intensity = carbon_intensity_data.get_current_intensity()
-        st.metric(label="uk current carbon intensity", value=current_intensity.carbon_intensity)
+        st.metric(
+            label="uk current carbon intensity",
+            value=current_intensity.carbon_intensity,
+        )
 
     else:
         postcode = st.session_state.postcode.strip()
@@ -70,14 +73,13 @@ def run():
                     label=f"current carbon intensity {st.session_state.postcode}",
                     value=f"{current_intensity} gCO₂/kWh",
                     delta=f"{(int(current_intensity - forecast_intensity['intensity'].mean()))} vs avg",
-                    delta_color='inverse'
+                    delta_color="inverse",
                 )
 
             with col2:
-
                 st.caption(f"best time to charge car is:")
                 st.markdown(
-                    f'## {find_minimum_carbon_window(forecast_intensity).strftime("%a %d-%b @ %H:%M")}'
+                    f"## {find_minimum_carbon_window(forecast_intensity).strftime('%a %d-%b @ %H:%M')}"
                 )
 
         if isinstance(forecast_intensity, pandas.DataFrame):
@@ -111,9 +113,10 @@ def run():
             st.write(f"unable to find postcode {st.session_state.postcode}")
 
     st.dataframe(
-        data=intensity_banding_df[['intensity', 'upper_bound']],
+        data=intensity_banding_df[["intensity", "upper_bound"]],
         hide_index=True,
     )
+
 
 if __name__ == "__main__":
     run()

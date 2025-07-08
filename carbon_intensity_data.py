@@ -42,7 +42,7 @@ def get_48hr_region_intensity(start_datetime: datetime.datetime, region_id: str)
 
 def get_48hr_postcode_intensity(start_datetime: datetime.datetime, postcode: str):
     """returns the regional g/CO2 equivalent emissions for specified region, using postcode to determine the region"""
- 
+
     period_start = start_datetime.isoformat()
 
     url = f"https://api.carbonintensity.org.uk/regional/intensity/{period_start}/fw48h/postcode/{postcode}"
@@ -85,7 +85,7 @@ def get_historical_postcode_mix(start_datetime: datetime.datetime, postcode: str
                 percentage=generation_values["perc"],
                 start_time=start_time["from"],
                 end_time=start_time["to"],
-                region_id=data["data"]["regionid"]
+                region_id=data["data"]["regionid"],
             )
             generation_mix_history.append(generation_mix_row)
 
@@ -124,9 +124,9 @@ def intensity_bands():
     color = ["lightgreen", "green", "yellow", "coral", "red"]
 
     intensity_bands = {
-            "intensity": band_names,
-            "lower_bound": lower_bound,
-            "upper_bound": upper_bound,
-            "color": color,
-        }
+        "intensity": band_names,
+        "lower_bound": lower_bound,
+        "upper_bound": upper_bound,
+        "color": color,
+    }
     return intensity_bands
