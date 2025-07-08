@@ -18,22 +18,6 @@ def find_minimum_carbon_window(df):
     return df.loc[window_average.idxmin(), "start_time"]
 
 
-def area_chart(banding_df) -> alt.Chart:
-    """returns banding chart for intensity levels"""
-
-    chart = (alt.Chart(banding_df).
-             mark_area(opacity=0.25).
-             encode(
-                 x='start_time:T',
-                 y='lower_bound:Q',
-                 y2='upper_bound:Q',
-                 color=alt.Color('color:N', scale=None)
-                 )
-             )
-
-    return chart
-
-
 def run():
     """app that displays some metrics about electricty generation in the uk"""
 
@@ -60,11 +44,27 @@ def run():
         current_intensity = carbon_intensity_data.get_current_postcode_intensity(
             postcode
         ).carbon_intensity
-        forecast_intensity = pandas.DataFrame(carbon_intensity_data.get_48hr_postcode_intensity(
-            start_datetime=datetime.datetime.now(), postcode=postcode
-        ))
-        forecast_intensity['start_time'] = pandas.to_datetime(forecast_intensity['start_time'])
-        forecast_intensity['end_time'] = pandas.to_datetime(forecast_intensity['end_time'])
+        forecast_intensity = pandas.DataFrame(
+            carbon_intensity_data.get_48hr_postcode_intensity(
+                start_datetime=datetime.datetime.now(), postcode=postcode
+            )
+        )
+        forecast_intensity["start_time"] = pandas.to_datetime(
+            forecast_intensity["start_time"]
+        )
+        forecast_intensity["end_time"] = pandas.to_datetime(
+            forecast_intensity["end_time"]
+        )
+
+        forecast_intensity = forecast_intensity.sort_values("intensity")
+        banding = pandas.DataFrame(carbon_intensity_data.intensity_bands()).sort_values(
+            "lower_bound"
+        )
+        banding = banding.rename(columns={"intensity": "intensity_label"})
+
+        forecast_intensity = pandas.merge_asof(
+            forecast_intensity, banding, left_on="intensity", right_on="lower_bound"
+        )
 
         if current_intensity != "":
             col1, col2 = st.columns(2)
@@ -83,32 +83,22 @@ def run():
                 )
 
         if isinstance(forecast_intensity, pandas.DataFrame):
-
-            # shouldn't use itertuples, maybe replace with matrix product
-            banding_charts = []
-            for row in intensity_banding_df.itertuples(index=False):
-                banding_area_chart = area_chart(pandas.DataFrame(
-                    [{'start_time': forecast_intensity['start_time'].min(),
-                      'lower_bound': row.lower_bound,
-                      'upper_bound': row.upper_bound,
-                      'color': row.color},
-                     {'start_time': forecast_intensity['start_time'].max(),
-                      'lower_bound': row.lower_bound,
-                       'upper_bound': row.upper_bound,
-                       'color': row.color}]
-                ))
-                banding_charts.append(banding_area_chart)
-
-            banding_charts = alt.layer(*banding_charts)
-
             forecast_chart = (
                 alt.Chart(forecast_intensity)
-                .mark_line()
-                .encode(x='start_time:T', y='intensity:Q')
+                .mark_bar()
+                .encode(
+                    x=alt.X("start_time:T", title="period"),
+                    y="intensity:Q",
+                    color=alt.Color(
+                        "intensity_label:N",
+                        scale=alt.Scale(
+                            domain=banding["intensity_label"], range=banding["color"]
+                        ),
+                        legend=alt.Legend(False),
+                    ),
+                )
             )
-
-            final_chart = forecast_chart + banding_charts
-            st.altair_chart(final_chart, use_container_width=True)
+            st.altair_chart(forecast_chart, use_container_width=True)
         else:
             st.write(f"unable to find postcode {st.session_state.postcode}")
 
