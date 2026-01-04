@@ -115,12 +115,12 @@ def get_current_postcode_intensity(postcode: str):
 
 
 def intensity_bands():
-    # year = 2025
+    # year = 2026
     # bandings are upadated periodically
 
     band_names = ["Very Low", "Low", "Moderate", "High", "Very High"]
-    lower_bound = [0, 30, 100, 180, 250]
-    upper_bound = [30, 100, 180, 250, 350]
+    lower_bound = [0, 25, 90, 170, 230]
+    upper_bound = [25, 90, 170, 230, 350]
     color = ["lightgreen", "green", "yellow", "coral", "red"]
 
     intensity_bands = {
